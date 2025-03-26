@@ -40,26 +40,40 @@ const NeonPreview = ({
         backgroundPosition: 'center'
       };
     }
+    
+    // Default background images showing rooms with empty walls
+    const backgroundImages: Record<string, string> = {
+      living: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?q=80&w=2070&auto=format&fit=crop',
+      bedroom: 'https://images.unsplash.com/photo-1560448205-4d9b3e6bb6db?q=80&w=2070&auto=format&fit=crop',
+      office: 'https://images.unsplash.com/photo-1498409785966-ab341407de6e?q=80&w=2069&auto=format&fit=crop',
+      brick: 'https://images.unsplash.com/photo-1595514535215-9a5e0e8e04be?q=80&w=1974&auto=format&fit=crop',
+      dark: 'https://images.unsplash.com/photo-1622547748225-3fc4abd2cca0?q=80&w=1932&auto=format&fit=crop',
+    };
+    
+    if (backgroundImages[background]) {
+      return {
+        backgroundImage: `url(${backgroundImages[background]})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center'
+      };
+    }
+    
     return {};
   };
 
   const getBackgroundClass = () => {
-    if (background === 'custom') return '';
+    if (background === 'custom' || ['living', 'bedroom', 'office', 'brick'].includes(background)) return '';
     
     const backgroundMap: Record<string, string> = {
       dark: 'bg-black',
-      brick: 'bg-[#2c1e1e]',
-      concrete: 'bg-[#343434]',
-      wood: 'bg-[#3b2a1a]',
       blue: 'bg-[#121826]',
     };
     
     return backgroundMap[background] || 'bg-black';
   };
 
-  // Calculate the aspect ratio for the preview
-  const calculatedRatio = height / width;
-  const previewHeight = Math.min(300, 800 * calculatedRatio);
+  // Calculate the aspect ratio for the preview - making it taller
+  const previewHeight = 400; // Fixed larger height
 
   return (
     <div className="w-full space-y-6 animate-fade-in">
@@ -73,7 +87,6 @@ const NeonPreview = ({
             style={{
               ...getBackgroundStyle(),
               height: `${previewHeight}px`,
-              maxHeight: '300px',
             }}
           >
             <div className="p-6 w-full h-full flex items-center justify-center">

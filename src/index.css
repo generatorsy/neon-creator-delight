@@ -8,6 +8,7 @@
   src: url('https://fonts.cdnfonts.com/s/75/TheSkinny.woff') format('woff');
   font-weight: normal;
   font-style: normal;
+  font-display: swap;
 }
 
 @font-face {
@@ -15,6 +16,7 @@
   src: url('https://fonts.cdnfonts.com/s/12844/Adam-Medium.woff') format('woff');
   font-weight: normal;
   font-style: normal;
+  font-display: swap;
 }
 
 @font-face {
@@ -22,6 +24,7 @@
   src: url('https://fonts.cdnfonts.com/s/18511/Clip.woff') format('woff');
   font-weight: normal;
   font-style: normal;
+  font-display: swap;
 }
 
 @font-face {
@@ -29,6 +32,7 @@
   src: url('https://fonts.cdnfonts.com/s/32383/Neon-Glow.woff') format('woff');
   font-weight: normal;
   font-style: normal;
+  font-display: swap;
 }
 
 @layer base {

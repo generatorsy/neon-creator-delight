@@ -44,8 +44,26 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <main className="flex-1 container mx-auto py-10 px-4 md:px-6 lg:px-8 max-w-6xl">
-        <div className="grid md:grid-cols-2 gap-8 items-start">
-          <div className="order-2 md:order-1">
+        <div className="flex flex-col gap-8">
+          {/* Preview Section - Larger and on top */}
+          <div className="w-full">
+            <NeonPreview
+              text={text}
+              font={font}
+              color={neonColor}
+              isGlowing={isGlowing}
+              width={width}
+              height={height}
+              background={background}
+              customBackgroundUrl={customBackgroundUrl}
+              onSelectBackground={setBackground}
+              onCustomBackgroundChange={setCustomBackgroundUrl}
+              enableTwoLines={enableTwoLines}
+            />
+          </div>
+          
+          {/* Form Section - Below the preview */}
+          <div className="w-full">
             <NeonForm
               text={text}
               setText={setText}
@@ -61,22 +79,6 @@ const Index = () => {
               price={price}
               enableTwoLines={enableTwoLines}
               setEnableTwoLines={setEnableTwoLines}
-            />
-          </div>
-          
-          <div className="order-1 md:order-2 md:sticky md:top-10">
-            <NeonPreview
-              text={text}
-              font={font}
-              color={neonColor}
-              isGlowing={isGlowing}
-              width={width}
-              height={height}
-              background={background}
-              customBackgroundUrl={customBackgroundUrl}
-              onSelectBackground={setBackground}
-              onCustomBackgroundChange={setCustomBackgroundUrl}
-              enableTwoLines={enableTwoLines}
             />
           </div>
         </div>

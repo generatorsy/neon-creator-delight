@@ -52,6 +52,9 @@ const NeonText = ({ text, font, color, isGlowing, width, maxWidth, enableTwoLine
   const neonColorVar = {
     '--neon-color': color
   } as React.CSSProperties;
+  
+  // Check font name for debugging
+  console.log('Selected font:', font, 'Font class:', fontClass);
 
   return (
     <div 
@@ -62,7 +65,7 @@ const NeonText = ({ text, font, color, isGlowing, width, maxWidth, enableTwoLine
         <div 
           key={index}
           className={cn(
-            "text-white tracking-wide transition-all duration-300",
+            "text-white tracking-wide transition-all duration-300 text-4xl md:text-5xl lg:text-6xl",
             fontClass,
             isGlowing ? "neon-text animate-flicker" : "",
             "text-center py-1"

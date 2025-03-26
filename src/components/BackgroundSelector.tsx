@@ -1,16 +1,15 @@
 
 import React, { useRef } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Image, Upload } from 'lucide-react';
 
 const backgrounds = [
-  { id: 'dark', label: 'Ciemna Ściana', color: 'bg-black' },
+  { id: 'living', label: 'Salon', color: 'bg-[#f5f5f5]' },
+  { id: 'bedroom', label: 'Sypialnia', color: 'bg-[#e0e0e0]' },
+  { id: 'office', label: 'Biuro', color: 'bg-[#d0d0d0]' },
   { id: 'brick', label: 'Cegła', color: 'bg-[#2c1e1e]' },
-  { id: 'concrete', label: 'Beton', color: 'bg-[#343434]' },
-  { id: 'wood', label: 'Drewno', color: 'bg-[#3b2a1a]' },
-  { id: 'blue', label: 'Niebieski', color: 'bg-[#121826]' },
+  { id: 'dark', label: 'Ciemna Ściana', color: 'bg-black' },
 ];
 
 type BackgroundSelectorProps = {
