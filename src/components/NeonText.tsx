@@ -40,20 +40,36 @@ const NeonText = ({ text, font, color, isGlowing, width, maxWidth, enableTwoLine
   // Calculate the scale factor based on the width
   const scaleFactor = width / maxWidth;
   
-  // Map font name to Tailwind class
-  const fontClass = 
-    font === 'Arial' ? 'font-arial' :
-    font === 'The Skinny' ? 'font-skinny' :
-    font === 'Adam' ? 'font-adam' :
-    font === 'Clip' ? 'font-clip' :
-    font === 'Neon Glow' ? 'font-neon-glow' : 'font-arial';
+  // Determine the font class based on the selected font
+  let fontClass = '';
+  
+  switch (font) {
+    case 'Arial':
+      fontClass = 'font-arial';
+      break;
+    case 'The Skinny':
+      fontClass = 'font-skinny';
+      break;
+    case 'Adam':
+      fontClass = 'font-adam';
+      break;
+    case 'Clip':
+      fontClass = 'font-clip';
+      break;
+    case 'Neon Glow':
+      fontClass = 'font-neon-glow';
+      break;
+    default:
+      fontClass = 'font-arial';
+      break;
+  }
   
   // Set the neon color as a CSS variable
   const neonColorVar = {
     '--neon-color': color
   } as React.CSSProperties;
   
-  // Check font name for debugging
+  // Debug the selected font and applied class
   console.log('Selected font:', font, 'Font class:', fontClass);
 
   return (
@@ -65,7 +81,7 @@ const NeonText = ({ text, font, color, isGlowing, width, maxWidth, enableTwoLine
         <div 
           key={index}
           className={cn(
-            "text-white tracking-wide transition-all duration-300 text-4xl md:text-5xl lg:text-6xl",
+            "text-white tracking-wide transition-all duration-300 text-5xl md:text-6xl lg:text-7xl",
             fontClass,
             isGlowing ? "neon-text animate-flicker" : "",
             "text-center py-1"
