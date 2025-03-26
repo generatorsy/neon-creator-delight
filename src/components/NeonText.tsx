@@ -40,29 +40,16 @@ const NeonText = ({ text, font, color, isGlowing, width, maxWidth, enableTwoLine
   // Calculate the scale factor based on the width
   const scaleFactor = width / maxWidth;
   
-  // Determine the font class based on the selected font
-  let fontClass = '';
+  // Get the font class directly without a switch statement
+  const fontClassMap: Record<string, string> = {
+    'Arial': 'font-arial',
+    'The Skinny': 'font-skinny',
+    'Adam': 'font-adam',
+    'Clip': 'font-clip',
+    'Neon Glow': 'font-neon-glow'
+  };
   
-  switch (font) {
-    case 'Arial':
-      fontClass = 'font-arial';
-      break;
-    case 'The Skinny':
-      fontClass = 'font-skinny';
-      break;
-    case 'Adam':
-      fontClass = 'font-adam';
-      break;
-    case 'Clip':
-      fontClass = 'font-clip';
-      break;
-    case 'Neon Glow':
-      fontClass = 'font-neon-glow';
-      break;
-    default:
-      fontClass = 'font-arial';
-      break;
-  }
+  const fontClass = fontClassMap[font] || 'font-arial';
   
   // Set the neon color as a CSS variable
   const neonColorVar = {
@@ -86,6 +73,14 @@ const NeonText = ({ text, font, color, isGlowing, width, maxWidth, enableTwoLine
             isGlowing ? "neon-text animate-flicker" : "",
             "text-center py-1"
           )}
+          style={{ 
+            // Explicitly set the font-family as a backup method
+            fontFamily: font === 'Arial' ? 'Arial, sans-serif' :
+                       font === 'The Skinny' ? '"The Skinny", sans-serif' :
+                       font === 'Adam' ? 'Adam, sans-serif' :
+                       font === 'Clip' ? 'Clip, sans-serif' :
+                       font === 'Neon Glow' ? '"Neon Glow", sans-serif' : 'Arial, sans-serif'
+          }}
         >
           {line}
         </div>
