@@ -20,10 +20,10 @@ const Index = () => {
     // Different fonts have different aspect ratios
     const fontRatios: Record<string, number> = {
       'Arial': 0.5,
-      'The Skinny': 0.6,
-      'Adam': 0.5,
-      'Clip': 0.65,
-      'Neon Glow': 0.7,
+      'Georgia': 0.6,
+      'Verdana': 0.5,
+      'Times New Roman': 0.65,
+      'Courier New': 0.7,
     };
     
     const ratio = fontRatios[font] || 0.5;
@@ -40,6 +40,11 @@ const Index = () => {
     const pricePerCm = 20; // 20zł per cm
     setPrice(width * pricePerCm);
   }, [width]);
+
+  // Debug font changes
+  useEffect(() => {
+    console.log('Font changed to:', font);
+  }, [font]);
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">

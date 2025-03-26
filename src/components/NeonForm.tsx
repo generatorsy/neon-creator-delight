@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
@@ -27,7 +26,8 @@ type NeonFormProps = {
   setEnableTwoLines: (enableTwoLines: boolean) => void;
 };
 
-const FONTS = ['Arial', 'The Skinny', 'Adam', 'Clip', 'Neon Glow'];
+// Updated simple fonts that are more likely to work
+const FONTS = ['Arial', 'Georgia', 'Verdana', 'Times New Roman', 'Courier New'];
 
 const COLORS = [
   { name: 'Biały ciepły', value: '#fff6e0' },
@@ -64,6 +64,11 @@ const NeonForm = ({
     const maxLength = enableTwoLines ? 40 : 24;
     const newText = e.target.value.slice(0, maxLength);
     setText(newText);
+  };
+
+  const handleFontChange = (selectedFont: string) => {
+    console.log('Changing font to:', selectedFont);
+    setFont(selectedFont);
   };
   
   return (
@@ -109,31 +114,20 @@ const NeonForm = ({
             <div className="space-y-2">
               <Label>Wybierz czcionkę</Label>
               <div className="grid grid-cols-1 gap-2">
-                {FONTS.map((fontName) => {
-                  const fontClass = 
-                    fontName === 'Arial' ? 'font-arial' :
-                    fontName === 'The Skinny' ? 'font-skinny' :
-                    fontName === 'Adam' ? 'font-adam' :
-                    fontName === 'Clip' ? 'font-clip' :
-                    fontName === 'Neon Glow' ? 'font-neon-glow' : '';
-                  
-                  return (
-                    <Button
-                      key={fontName}
-                      variant={font === fontName ? "default" : "outline"}
-                      className={cn(
-                        "h-auto py-4 relative justify-start",
-                        fontClass
-                      )}
-                      onClick={() => setFont(fontName)}
-                    >
-                      <span className="text-lg">{fontName}</span>
-                      {font === fontName && (
-                        <Check className="absolute right-4 w-4 h-4" />
-                      )}
-                    </Button>
-                  );
-                })}
+                {FONTS.map((fontName) => (
+                  <Button
+                    key={fontName}
+                    variant={font === fontName ? "default" : "outline"}
+                    className="h-auto py-4 relative justify-start"
+                    onClick={() => handleFontChange(fontName)}
+                    style={{ fontFamily: fontName }}
+                  >
+                    <span className="text-lg">{fontName}</span>
+                    {font === fontName && (
+                      <Check className="absolute right-4 w-4 h-4" />
+                    )}
+                  </Button>
+                ))}
               </div>
             </div>
           </TabsContent>
