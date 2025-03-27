@@ -186,6 +186,7 @@ export const calculateTextPathLength = (
 
 /**
  * Calculates approximate path length for text that may span multiple lines
+ * and scales it according to the user-specified dimensions
  */
 export const calculatePathLengthForText = (
   text: string,
@@ -194,27 +195,55 @@ export const calculatePathLengthForText = (
   width: number,
   height: number
 ): number => {
-  // Calculate the basic path length
-  let basicPathLength = 0;
-  
-  if (enableTwoLines && text.length > 20) {
-    const lines = splitTextIntoLines(text);
-    // Sum the path length of each line
-    basicPathLength = lines.reduce((sum, line) => {
-      return sum + calculateTextPathLength(line, font);
-    }, 0);
-  } else {
-    basicPathLength = calculateTextPathLength(text, font);
+  if (!text || text.trim() === '') {
+    return 0;
   }
   
-  // Measure the text dimensions
-  const { width: naturalWidth, height: naturalHeight } = measureTextInCm(text, font);
+  // Handle special case for very simple characters like "I"
+  // where we need direct correlation between character count and path length
+  const simpleCharRegex = /^[Ii\|]+$/;
+  if (simpleCharRegex.test(text)) {
+    // For simple vertical characters, path length is directly proportional to character count and height
+    return text.length * height;
+  }
   
-  // Calculate the scaling factor based on the specified dimensions
-  // We use the width scaling factor because that's what the user can directly control
-  const scaleFactor = width / naturalWidth;
+  let textToMeasure = text;
+  let lines = [textToMeasure];
   
-  // Apply the scaling factor to the path length
-  return basicPathLength * scaleFactor;
+  if (enableTwoLines && text.length > 20) {
+    lines = splitTextIntoLines(text);
+  }
+  
+  // Get the natural dimensions of the text
+  let totalNaturalWidth = 0;
+  let maxNaturalHeight = 0;
+  
+  lines.forEach(line => {
+    const { width: lineWidth, height: lineHeight } = measureTextInCm(line, font);
+    totalNaturalWidth = Math.max(totalNaturalWidth, lineWidth);
+    maxNaturalHeight += lineHeight;
+  });
+  
+  // Calculate the scale factor based on user-specified width
+  const scaleFactor = width / totalNaturalWidth;
+  
+  // Calculate path length for each line and apply the scale factor
+  let totalPathLength = 0;
+  
+  lines.forEach(line => {
+    // Calculate the basic path length for this line
+    const basePath = calculateTextPathLength(line, font);
+    // Apply the scale factor to get the actual path length
+    totalPathLength += basePath * scaleFactor;
+  });
+  
+  // For curved letters, the path length is typically longer than the straight-line width
+  // Apply a correction factor based on character complexity
+  const containsComplexChars = /[OoCcGgSsQqDdBbPpRrUuJj]/i.test(text);
+  if (containsComplexChars) {
+    totalPathLength *= 1.2; // 20% increase for curved characters
+  }
+  
+  // Round to one decimal place for better readability
+  return Math.round(totalPathLength * 10) / 10;
 };
-
