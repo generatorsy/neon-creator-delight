@@ -190,15 +190,31 @@ export const calculateTextPathLength = (
 export const calculatePathLengthForText = (
   text: string,
   font: string,
-  enableTwoLines: boolean = false
+  enableTwoLines: boolean = false,
+  width: number,
+  height: number
 ): number => {
+  // Calculate the basic path length
+  let basicPathLength = 0;
+  
   if (enableTwoLines && text.length > 20) {
     const lines = splitTextIntoLines(text);
     // Sum the path length of each line
-    return lines.reduce((sum, line) => {
+    basicPathLength = lines.reduce((sum, line) => {
       return sum + calculateTextPathLength(line, font);
     }, 0);
   } else {
-    return calculateTextPathLength(text, font);
+    basicPathLength = calculateTextPathLength(text, font);
   }
+  
+  // Measure the text dimensions
+  const { width: naturalWidth, height: naturalHeight } = measureTextInCm(text, font);
+  
+  // Calculate the scaling factor based on the specified dimensions
+  // We use the width scaling factor because that's what the user can directly control
+  const scaleFactor = width / naturalWidth;
+  
+  // Apply the scaling factor to the path length
+  return basicPathLength * scaleFactor;
 };
+

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import NeonForm from '@/components/NeonForm';
 import NeonPreview from '@/components/NeonPreview';
@@ -54,11 +53,13 @@ const Index = () => {
       const isExceeding = exceedsMaxHeight(newHeight);
       setExceedsLimit(isExceeding);
       
-      // Calculate path length
+      // Calculate path length with the updated function to consider actual dimensions
       const textPathLength = calculatePathLengthForText(
         text || 'Twój tekst',
         font,
-        enableTwoLines
+        enableTwoLines,
+        width,
+        newHeight
       );
       setPathLength(textPathLength);
       
