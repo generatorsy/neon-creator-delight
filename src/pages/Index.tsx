@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import NeonForm from '@/components/NeonForm';
 import NeonPreview from '@/components/NeonPreview';
+import { calculateHeightForWidth } from '@/utils/textMeasurement';
 
 const Index = () => {
   const [text, setText] = useState('Twój tekst');
@@ -15,24 +16,35 @@ const Index = () => {
   const [price, setPrice] = useState(0);
   const [enableTwoLines, setEnableTwoLines] = useState(false);
 
-  // Calculate height based on the text, font and width
+  // Calculate height based on the text, font and width using Canvas API
   useEffect(() => {
-    // Different fonts have different aspect ratios
-    const fontRatios: Record<string, number> = {
-      'Arial': 0.5,
-      'Georgia': 0.6,
-      'Verdana': 0.5,
-      'Times New Roman': 0.65,
-      'Courier New': 0.7,
-    };
-    
-    const ratio = fontRatios[font] || 0.5;
-    const baseHeight = width * ratio;
-    
-    // Adjust for text on two lines
-    const calculatedHeight = enableTwoLines ? baseHeight * 1.5 : baseHeight;
-    
-    setHeight(Math.max(10, Math.round(calculatedHeight))); // Ensure minimum height
+    try {
+      // Use the new utility to calculate height based on text measurements
+      const calculatedHeight = calculateHeightForWidth(
+        text || 'Twój tekst',
+        font,
+        width,
+        enableTwoLines
+      );
+      
+      // Set a minimum height
+      setHeight(Math.max(10, Math.round(calculatedHeight)));
+      
+      console.log('Calculated dimensions:', {
+        text,
+        font,
+        width: `${width}cm`,
+        height: `${Math.round(calculatedHeight)}cm`,
+        twoLines: enableTwoLines
+      });
+    } catch (error) {
+      console.error('Error calculating height:', error);
+      // Fallback to simple calculation if canvas measurement fails
+      const ratio = 0.5;
+      const baseHeight = width * ratio;
+      const calculatedHeight = enableTwoLines ? baseHeight * 1.5 : baseHeight;
+      setHeight(Math.max(10, Math.round(calculatedHeight)));
+    }
   }, [text, font, width, enableTwoLines]);
 
   // Calculate price based on width
