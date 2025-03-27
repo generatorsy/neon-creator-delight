@@ -139,3 +139,66 @@ export const splitTextIntoLines = (text: string): string[] => {
 export const exceedsMaxHeight = (height: number, maxHeight: number = 60): boolean => {
   return height > maxHeight;
 };
+
+/**
+ * Calculates approximate path length of text in centimeters
+ * This estimates the centerline length of each glyph
+ */
+export const calculateTextPathLength = (
+  text: string,
+  font: string,
+  fontSize: number = 72
+): number => {
+  const canvas = document.createElement('canvas');
+  const context = canvas.getContext('2d');
+  
+  if (!context) {
+    console.error('Canvas context not available');
+    return 0;
+  }
+  
+  // Set font on the canvas context
+  context.font = `${fontSize}px ${font}`;
+  
+  let totalPathLength = 0;
+  
+  // For each character, measure its width and add to total
+  // This is an approximation as we can't directly measure the exact centerline path
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+    const charWidth = context.measureText(char).width;
+    
+    // Add character width to total path length
+    totalPathLength += charWidth;
+    
+    // For complex characters (like m, w, etc.), add a small correction factor
+    // based on the character complexity
+    if (/[mwMW]/.test(char)) {
+      totalPathLength += charWidth * 0.3; // 30% extra for complex characters
+    } else if (/[BDOPQRSbdopqrs]/.test(char)) {
+      totalPathLength += charWidth * 0.2; // 20% extra for curved characters
+    }
+  }
+  
+  // Convert to centimeters
+  return pxToCm(totalPathLength);
+};
+
+/**
+ * Calculates approximate path length for text that may span multiple lines
+ */
+export const calculatePathLengthForText = (
+  text: string,
+  font: string,
+  enableTwoLines: boolean = false
+): number => {
+  if (enableTwoLines && text.length > 20) {
+    const lines = splitTextIntoLines(text);
+    // Sum the path length of each line
+    return lines.reduce((sum, line) => {
+      return sum + calculateTextPathLength(line, font);
+    }, 0);
+  } else {
+    return calculateTextPathLength(text, font);
+  }
+};

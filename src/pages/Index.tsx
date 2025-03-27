@@ -2,7 +2,11 @@
 import React, { useState, useEffect } from 'react';
 import NeonForm from '@/components/NeonForm';
 import NeonPreview from '@/components/NeonPreview';
-import { calculateHeightForWidth, exceedsMaxHeight } from '@/utils/textMeasurement';
+import { 
+  calculateHeightForWidth, 
+  exceedsMaxHeight, 
+  calculatePathLengthForText 
+} from '@/utils/textMeasurement';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -20,6 +24,7 @@ const Index = () => {
   const [customBackgroundUrl, setCustomBackgroundUrl] = useState<string | null>(null);
   const [price, setPrice] = useState(0);
   const [enableTwoLines, setEnableTwoLines] = useState(false);
+  const [pathLength, setPathLength] = useState(0); // New state for path length
   
   // Dialog state
   const [exceedsLimit, setExceedsLimit] = useState(false);
@@ -49,21 +54,32 @@ const Index = () => {
       const isExceeding = exceedsMaxHeight(newHeight);
       setExceedsLimit(isExceeding);
       
+      // Calculate path length
+      const textPathLength = calculatePathLengthForText(
+        text || 'Twój tekst',
+        font,
+        enableTwoLines
+      );
+      setPathLength(textPathLength);
+      
       console.log('Calculated dimensions:', {
         text,
         font,
         width: `${width}cm`,
         height: `${Math.round(calculatedHeight)}cm`,
+        pathLength: `${textPathLength.toFixed(1)}cm`,
         twoLines: enableTwoLines,
         exceedsLimit: isExceeding
       });
     } catch (error) {
-      console.error('Error calculating height:', error);
+      console.error('Error calculating dimensions:', error);
       // Fallback to simple calculation if canvas measurement fails
       const ratio = 0.5;
       const baseHeight = width * ratio;
       const calculatedHeight = enableTwoLines ? baseHeight * 1.5 : baseHeight;
       setHeight(Math.max(10, Math.round(calculatedHeight)));
+      // Estimate path length as 1.5x the width (rough approximation)
+      setPathLength(width * 1.5);
     }
   }, [text, font, width, enableTwoLines]);
 
@@ -158,6 +174,7 @@ const Index = () => {
               setEnableTwoLines={setEnableTwoLines}
               exceedsLimit={exceedsLimit}
               onCustomQuoteRequest={() => setShowContactDialog(true)}
+              pathLength={pathLength}
             />
           </div>
         </div>

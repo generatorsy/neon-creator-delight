@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
-import { Check, LightbulbOff, LightbulbIcon, AlertTriangle } from 'lucide-react';
+import { Check, LightbulbOff, LightbulbIcon, AlertTriangle, Ruler } from 'lucide-react';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 type NeonFormProps = {
@@ -28,6 +28,7 @@ type NeonFormProps = {
   setEnableTwoLines: (enableTwoLines: boolean) => void;
   exceedsLimit: boolean;
   onCustomQuoteRequest: () => void;
+  pathLength: number;
 };
 
 // Updated simple fonts that are more likely to work
@@ -64,6 +65,7 @@ const NeonForm = ({
   setEnableTwoLines,
   exceedsLimit,
   onCustomQuoteRequest,
+  pathLength,
 }: NeonFormProps) => {
   
   const handleTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -229,6 +231,14 @@ const NeonForm = ({
               ) : (
                 "Cena obliczana jest na podstawie szerokości neonu (1cm = 20zł)"
               )}
+            </div>
+            
+            {/* Add path length information below price */}
+            <div className="flex items-center mt-2 pt-2 border-t border-border/30">
+              <Ruler className="h-4 w-4 mr-2 text-muted-foreground" />
+              <span className="text-sm">
+                Długość ścieżki: <span className="font-medium">{pathLength.toFixed(1)} cm</span>
+              </span>
             </div>
           </div>
           
