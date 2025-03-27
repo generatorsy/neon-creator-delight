@@ -2,7 +2,12 @@
 import React, { useState, useEffect } from 'react';
 import NeonForm from '@/components/NeonForm';
 import NeonPreview from '@/components/NeonPreview';
-import { calculateHeightForWidth } from '@/utils/textMeasurement';
+import { calculateHeightForWidth, exceedsMaxHeight } from '@/utils/textMeasurement';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { useToast } from '@/hooks/use-toast';
 
 const Index = () => {
   const [text, setText] = useState('Twój tekst');
@@ -15,6 +20,15 @@ const Index = () => {
   const [customBackgroundUrl, setCustomBackgroundUrl] = useState<string | null>(null);
   const [price, setPrice] = useState(0);
   const [enableTwoLines, setEnableTwoLines] = useState(false);
+  
+  // Dialog state
+  const [exceedsLimit, setExceedsLimit] = useState(false);
+  const [showContactDialog, setShowContactDialog] = useState(false);
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [message, setMessage] = useState('');
+  
+  const { toast } = useToast();
 
   // Calculate height based on the text, font and width using Canvas API
   useEffect(() => {
@@ -28,14 +42,20 @@ const Index = () => {
       );
       
       // Set a minimum height
-      setHeight(Math.max(10, Math.round(calculatedHeight)));
+      const newHeight = Math.max(10, Math.round(calculatedHeight));
+      setHeight(newHeight);
+      
+      // Check if exceeds maximum height
+      const isExceeding = exceedsMaxHeight(newHeight);
+      setExceedsLimit(isExceeding);
       
       console.log('Calculated dimensions:', {
         text,
         font,
         width: `${width}cm`,
         height: `${Math.round(calculatedHeight)}cm`,
-        twoLines: enableTwoLines
+        twoLines: enableTwoLines,
+        exceedsLimit: isExceeding
       });
     } catch (error) {
       console.error('Error calculating height:', error);
@@ -57,6 +77,46 @@ const Index = () => {
   useEffect(() => {
     console.log('Font changed to:', font);
   }, [font]);
+  
+  const handleCustomQuoteSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!email.trim()) {
+      toast({
+        title: "Błąd",
+        description: "Adres email jest wymagany.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Here we would send the data to a backend
+    console.log("Custom quote request:", {
+      email,
+      phone,
+      message,
+      neonDetails: {
+        text,
+        font,
+        color: neonColor,
+        width,
+        height,
+        enableTwoLines
+      }
+    });
+    
+    // Show success message
+    toast({
+      title: "Dziękujemy!",
+      description: "Twoje zapytanie zostało wysłane. Skontaktujemy się z Tobą w ciągu 24 godzin.",
+    });
+    
+    // Reset form and close dialog
+    setEmail('');
+    setPhone('');
+    setMessage('');
+    setShowContactDialog(false);
+  };
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
@@ -96,10 +156,63 @@ const Index = () => {
               price={price}
               enableTwoLines={enableTwoLines}
               setEnableTwoLines={setEnableTwoLines}
+              exceedsLimit={exceedsLimit}
+              onCustomQuoteRequest={() => setShowContactDialog(true)}
             />
           </div>
         </div>
       </main>
+      
+      {/* Custom Quote Dialog */}
+      <Dialog open={showContactDialog} onOpenChange={setShowContactDialog}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Indywidualna wycena</DialogTitle>
+            <DialogDescription>
+              Twój projekt wymaga indywidualnej wyceny. Zostaw swoje dane, a odpowiemy w ciągu 24 godzin.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <form onSubmit={handleCustomQuoteSubmit} className="space-y-4 pt-4">
+            <div className="space-y-2">
+              <Label htmlFor="email" className="required">Email *</Label>
+              <Input 
+                id="email" 
+                type="email" 
+                placeholder="twoj@email.pl" 
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="phone">Telefon (opcjonalnie)</Label>
+              <Input 
+                id="phone" 
+                type="tel" 
+                placeholder="+48 123 456 789" 
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="message">Dodatkowe informacje (opcjonalnie)</Label>
+              <Input 
+                id="message" 
+                placeholder="Dodatkowe informacje lub pytania..." 
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+              />
+            </div>
+            
+            <DialogFooter className="pt-4">
+              <Button type="submit" className="w-full">Wyślij zapytanie</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

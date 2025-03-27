@@ -132,3 +132,10 @@ export const splitTextIntoLines = (text: string): string[] => {
     ];
   }
 };
+
+/**
+ * Checks if height exceeds maximum allowed height
+ */
+export const exceedsMaxHeight = (height: number, maxHeight: number = 60): boolean => {
+  return height > maxHeight;
+};

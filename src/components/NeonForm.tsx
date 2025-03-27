@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
@@ -7,7 +8,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
-import { Check, LightbulbOff, LightbulbIcon } from 'lucide-react';
+import { Check, LightbulbOff, LightbulbIcon, AlertTriangle } from 'lucide-react';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 type NeonFormProps = {
   text: string;
@@ -24,6 +26,8 @@ type NeonFormProps = {
   price: number;
   enableTwoLines: boolean;
   setEnableTwoLines: (enableTwoLines: boolean) => void;
+  exceedsLimit: boolean;
+  onCustomQuoteRequest: () => void;
 };
 
 // Updated simple fonts that are more likely to work
@@ -58,6 +62,8 @@ const NeonForm = ({
   price,
   enableTwoLines,
   setEnableTwoLines,
+  exceedsLimit,
+  onCustomQuoteRequest,
 }: NeonFormProps) => {
   
   const handleTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -197,18 +203,41 @@ const NeonForm = ({
             </div>
           </div>
           
+          {exceedsLimit && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle>Przekroczono limit wysokości</AlertTitle>
+              <AlertDescription>
+                Wysokość Twojego neonu ({height} cm) przekracza maksymalny dozwolony limit 60 cm.
+                Potrzebna jest indywidualna wycena.
+              </AlertDescription>
+            </Alert>
+          )}
+          
           <div className="p-4 bg-secondary/30 rounded-md mt-4">
             <div className="flex justify-between items-center">
               <span className="text-lg font-semibold">Cena:</span>
-              <span className="text-2xl font-bold">{price.toFixed(2)} zł</span>
+              {exceedsLimit ? (
+                <span className="text-2xl font-bold">Wycena indywidualna</span>
+              ) : (
+                <span className="text-2xl font-bold">{price.toFixed(2)} zł</span>
+              )}
             </div>
             <div className="text-xs text-muted-foreground mt-1">
-              Cena obliczana jest na podstawie szerokości neonu (1cm = 20zł)
+              {exceedsLimit ? (
+                "Ze względu na niestandardowy rozmiar, potrzebna jest indywidualna wycena."
+              ) : (
+                "Cena obliczana jest na podstawie szerokości neonu (1cm = 20zł)"
+              )}
             </div>
           </div>
           
-          <Button className="w-full" size="lg">
-            Zamów swój neon
+          <Button 
+            className="w-full" 
+            size="lg"
+            onClick={exceedsLimit ? onCustomQuoteRequest : undefined}
+          >
+            {exceedsLimit ? "Poproś o indywidualną wycenę" : "Zamów swój neon"}
           </Button>
         </div>
       </CardContent>
