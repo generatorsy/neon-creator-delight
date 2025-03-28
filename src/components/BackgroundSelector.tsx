@@ -12,6 +12,7 @@ const backgrounds = [
   { id: 'dark', label: 'Ciemna Ściana', color: 'bg-black' },
 ];
 
+
 type BackgroundSelectorProps = {
   selectedBackground: string;
   onSelectBackground: (bgId: string) => void;
