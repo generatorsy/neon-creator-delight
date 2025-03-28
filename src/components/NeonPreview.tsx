@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useMemo, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import NeonText from './NeonText';
 import BackgroundSelector from './BackgroundSelector';
@@ -40,6 +39,8 @@ const NeonPreview = ({
   onLetterColorChange,
   enableTwoLines
 }: NeonPreviewProps) => {
+  // Referencja do tekstu do debugowania
+  const textRef = useRef<HTMLDivElement>(null);
   const getBackgroundStyle = () => {
     if (background === 'custom' && customBackgroundUrl) {
       return {
@@ -80,12 +81,58 @@ const NeonPreview = ({
     return backgroundMap[background] || 'bg-black';
   };
 
-  // Calculate the aspect ratio for the preview - making it taller
-  const previewHeight = 400; // Fixed larger height
+  // Bezpieczne wartości dla height i width
+  const safeHeight = useMemo(() => {
+    // Ograniczamy wysokość do rozsądnego maksimum dla wizualizacji
+    return Math.min(Math.max(height, 1), 100);
+  }, [height]);
   
-  // Convert to inches for display
-  const widthInches = (width / 2.54).toFixed(1);
-  const heightInches = (height / 2.54).toFixed(1);
+  const safeWidth = useMemo(() => {
+    // Upewniamy się, że szerokość jest zawsze dodatnia i nie przekracza maksimum
+    return Math.min(Math.max(width, 20), 120);
+  }, [width]);
+  
+  // Oblicz wysokość podglądu, która zachowuje proporcje
+  const previewHeight = useMemo(() => {
+    // Bazowa wysokość
+    const baseHeight = 400;
+    
+    // Dostosuj wysokość, jeśli neon ma nietypowe proporcje
+    if (safeHeight > safeWidth * 0.8) {
+      // Dla wysokich neonów zwiększamy wysokość podglądu
+      return Math.min(500, baseHeight * (safeHeight / (safeWidth * 0.8)));
+    }
+    
+    return baseHeight;
+  }, [safeHeight, safeWidth]);
+  
+  // Oblicz wysokość dla miar (oś Y)
+  const measureHeight = useMemo(() => {
+    // Proporcjonalna do wysokości podglądu
+    return previewHeight * 0.75;
+  }, [previewHeight]);
+  
+  // Konwertuj na cale dla wyświetlania
+  const widthInches = (safeWidth / 2.54).toFixed(1);
+  const heightInches = (safeHeight / 2.54).toFixed(1);
+  
+  // Zaokrąglanie wymiarów dla czytelności
+  const displayHeight = useMemo(() => {
+    // Jeśli wysokość ma więcej niż 2 cyfry po przecinku, zaokrąglij do 1
+    return safeHeight >= 10 ? safeHeight.toFixed(1) : safeHeight.toFixed(2);
+  }, [safeHeight]);
+  
+  const displayWidth = useMemo(() => {
+    // Zaokrąglij szerokość do 1 miejsca po przecinku
+    return safeWidth.toFixed(1);
+  }, [safeWidth]);
+
+  // Obliczanie dokładnych wymiarów bez świecenia
+  const realHeight = useMemo(() => {
+    // Około 87% wysokości z efektem świecenia
+    const realH = safeHeight * 0.87;
+    return realH.toFixed(1);
+  }, [safeHeight]);
 
   return (
     <div className="w-full space-y-6 animate-fade-in">
@@ -101,71 +148,50 @@ const NeonPreview = ({
               height: `${previewHeight}px`,
             }}
           >
-            {/* Toggle Glow Button in the top right corner */}
-            <Button 
-              variant="outline" 
-              size="icon" 
-              className="absolute top-2 right-2 z-10 bg-background/80 backdrop-blur-sm" 
-              onClick={onToggleGlow}
-              title={isGlowing ? "Wyłącz świecenie" : "Włącz świecenie"}
-            >
-              {isGlowing ? <Lightbulb className="h-4 w-4" /> : <LightbulbOff className="h-4 w-4" />}
-            </Button>
+            {/* Przycisk Toggle Glow przesunięty do głównego kontenera poniżej */}
             
-            <div className="p-6 w-full h-full flex items-center justify-center relative">
-              {/* Height measurement on the left - styled like the reference image */}
-              <div className="absolute left-8 top-1/2 -translate-y-1/2 flex items-center h-3/4">
-                <div className="flex flex-col items-center">
-                  {/* Vertical line */}
-                  <div className="w-px h-full bg-white/60 relative">
-                    {/* Top cap */}
-                    <div className="absolute -top-2 left-0 w-4 h-px bg-white/60 -translate-x-1/2"></div>
-                    {/* Bottom cap */}
-                    <div className="absolute -bottom-2 left-0 w-4 h-px bg-white/60 -translate-x-1/2"></div>
+            <div className="relative w-full h-full flex flex-col items-center justify-center">
+              {/* Dokładny kontener dla tekstu i linii pomiarowych */}
+              <div className="relative flex items-center justify-center">
+                {/* Oblicz proporcjonalny rozmiar na podstawie szerokości */}
+                <div className="relative" style={{ fontSize: `calc(${safeWidth}px / 8)` }}>
+                  
+                  {/* Główna zawartość - neon (z wysokim z-index, aby być na wierzchu) */}
+                  <div className="z-20 relative flex flex-col justify-center items-center" 
+                    style={{ height: `${safeHeight}px` }}>
+                    <NeonText
+                      text={text || 'Twój tekst'}
+                      font={font}
+                      color={color}
+                      letterColors={letterColors}
+                      isGlowing={isGlowing}
+                      width={safeWidth}
+                      maxWidth={90}
+                      onLetterColorChange={onLetterColorChange}
+                      enableTwoLines={enableTwoLines}
+                      containerRef={textRef}
+                    />
                   </div>
-                  {/* Height text */}
-                  <div className="absolute -left-2 top-1/2 -translate-y-1/2 transform -rotate-90 whitespace-nowrap">
-                    <span className="text-xs text-white bg-black/70 px-1 py-0.5 rounded">
-                      {height.toFixed(2)}cm / {heightInches}in
-                    </span>
-                  </div>
+                  
+                  {/* Usunięto nakładkę z pomiarami */}
                 </div>
               </div>
               
-              {/* Width measurement at the bottom - styled like the reference image */}
-              <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center w-3/4">
-                <div className="flex flex-col items-center">
-                  {/* Horizontal line */}
-                  <div className="h-px w-full bg-white/60 relative">
-                    {/* Left cap */}
-                    <div className="absolute top-0 -left-2 h-4 w-px bg-white/60 -translate-y-1/2"></div>
-                    {/* Right cap */}
-                    <div className="absolute top-0 -right-2 h-4 w-px bg-white/60 -translate-y-1/2"></div>
-                  </div>
-                  {/* Width text */}
-                  <span className="text-xs text-white bg-black/70 px-1 py-0.5 rounded mt-1">
-                    {width.toFixed(2)}cm / {widthInches}in
-                  </span>
-                </div>
-              </div>
-              
-              <NeonText 
-                text={text || 'Twój tekst'}
-                font={font}
-                color={color}
-                letterColors={letterColors}
-                isGlowing={isGlowing}
-                width={width}
-                maxWidth={90} // Reduced to make text larger
-                onLetterColorChange={onLetterColorChange}
-                enableTwoLines={enableTwoLines}
-              />
+              {/* Button for toggling glow - przenieśliśmy go poza główny kontener */}
+              <Button 
+                variant="outline" 
+                size="icon" 
+                className="absolute top-2 right-2 z-10 bg-background/80 backdrop-blur-sm" 
+                onClick={onToggleGlow}
+                title={isGlowing ? "Wyłącz świecenie" : "Włącz świecenie"}
+              >
+                {isGlowing ? <Lightbulb className="h-4 w-4" /> : <LightbulbOff className="h-4 w-4" />}
+              </Button>
             </div>
           </div>
 
-          <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span>Szerokość: {width.toFixed(2)} cm</span>
-            <span>Wysokość: {height.toFixed(2)} cm</span>
+          <div className="text-xs text-center text-white">
+            <span>Wymiar rzeczywisty: {displayWidth} × {realHeight} cm</span>
           </div>
 
           <BackgroundSelector

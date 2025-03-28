@@ -95,10 +95,11 @@
     @apply backdrop-blur-2xl bg-black/40 border border-white/10;
   }
   
-  .neon-text {
+  /* Przesunięto do App.css i zastąpiono przez neon-text-effect */
+  /* .neon-text {
     @apply relative;
     text-shadow: 0 0 5px var(--neon-color), 0 0 10px var(--neon-color), 0 0 20px var(--neon-color);
-  }
+  } */
   
   .neon-text-soft {
     @apply relative;
@@ -108,5 +109,12 @@
   .neon-text-strong {
     @apply relative;
     text-shadow: 0 0 5px var(--neon-color), 0 0 10px var(--neon-color), 0 0 20px var(--neon-color), 0 0 30px var(--neon-color), 0 0 40px var(--neon-color);
+  }
+  
+  /* Wyraźne wyłączenie wszystkich efektów świecenia */
+  .no-glow {
+    text-shadow: none !important;
+    filter: none !important;
+    box-shadow: none !important;
   }
 }

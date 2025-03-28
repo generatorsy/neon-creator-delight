@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import NeonForm from '@/components/NeonForm';
 import NeonPreview from '@/components/NeonPreview';
 
@@ -11,7 +11,7 @@ interface NeonDesignerProps {
   neonColor: string;
   setNeonColor: (color: string) => void;
   letterColors: Record<number, string>;
-  setLetterColors: (colors: Record<number, string>) => void;
+  setLetterColors: React.Dispatch<React.SetStateAction<Record<number, string>>>;
   width: number;
   setWidth: (width: number) => void;
   height: number;
@@ -54,6 +54,14 @@ const NeonDesigner = ({
   onCustomQuoteRequest,
   pathLength
 }: NeonDesignerProps) => {
+  // Referencja do triggera ponownego renderowania
+  const updateCounter = useRef(0);
+  
+  // Wymuszenie rerenderowania preview przy zmianie szerokości lub wysokości
+  useEffect(() => {
+    updateCounter.current += 1;
+  }, [width, height, text, font]);
+  
   // Handle letter color change - fixed TypeScript error
   const handleLetterColorChange = (index: number, color: string) => {
     setLetterColors((prev: Record<number, string>) => ({
@@ -67,6 +75,7 @@ const NeonDesigner = ({
       {/* Preview Section - Larger and on top */}
       <div className="w-full">
         <NeonPreview
+          key={`preview-${updateCounter.current}`}
           text={text}
           font={font}
           color={neonColor}
@@ -104,6 +113,7 @@ const NeonDesigner = ({
           exceedsLimit={exceedsLimit}
           onCustomQuoteRequest={onCustomQuoteRequest}
           pathLength={pathLength}
+          letterColors={letterColors}
         />
       </div>
     </div>

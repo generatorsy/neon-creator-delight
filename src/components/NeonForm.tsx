@@ -7,7 +7,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
-import { Check, LightbulbOff, LightbulbIcon, AlertTriangle, Ruler } from 'lucide-react';
+import { Check, LightbulbOff, LightbulbIcon, AlertTriangle, Ruler, ThumbsUp } from 'lucide-react';
+import ConfirmProjectDialog from './ConfirmProjectDialog';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import PathLengthVisualizer from './PathLengthVisualizer';
 import { Textarea } from '@/components/ui/textarea';
@@ -47,6 +48,7 @@ type NeonFormProps = {
   exceedsLimit: boolean;
   onCustomQuoteRequest: () => void;
   pathLength: number;
+  letterColors: Record<number, string>;
 };
 
 const NeonForm = ({
@@ -67,6 +69,7 @@ const NeonForm = ({
   exceedsLimit,
   onCustomQuoteRequest,
   pathLength,
+  letterColors,
 }: NeonFormProps) => {
   
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -87,9 +90,15 @@ const NeonForm = ({
     setText(newText);
   };
 
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  
   const handleFontChange = (selectedFont: string) => {
     console.log('Changing font to:', selectedFont);
     setFont(selectedFont);
+  };
+  
+  const handleAcceptProject = () => {
+    setShowConfirmDialog(true);
   };
   
   return (
@@ -270,10 +279,32 @@ const NeonForm = ({
           <Button 
             className="w-full" 
             size="lg"
-            onClick={exceedsLimit ? onCustomQuoteRequest : undefined}
+            onClick={exceedsLimit ? onCustomQuoteRequest : handleAcceptProject}
+            disabled={!text.trim()}
           >
-            {exceedsLimit ? "Poproś o indywidualną wycenę" : "Zamów swój neon"}
+            {exceedsLimit ? (
+              "Poproś o indywidualną wycenę" 
+            ) : (
+              <span className="flex items-center gap-2">
+                <ThumbsUp className="w-4 h-4" />
+                Akceptuję projekt
+              </span>
+            )}
           </Button>
+          
+          {/* Dialog potwierdzenia projektu */}
+          <ConfirmProjectDialog
+            open={showConfirmDialog}
+            onOpenChange={setShowConfirmDialog}
+            text={text || "Twój tekst"}
+            font={font}
+            color={neonColor}
+            letterColors={letterColors}
+            width={width}
+            height={height}
+            price={price}
+            enableTwoLines={enableTwoLines || text.includes('\n')}
+          />
         </div>
       </CardContent>
     </Card>

@@ -1,9 +1,10 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   calculateHeightForWidth, 
   exceedsMaxHeight, 
-  calculatePathLengthForText 
+  calculatePathLengthForText,
+  measureTextInCm
 } from '@/utils/textMeasurement';
 import CustomQuoteDialog from '@/components/CustomQuoteDialog';
 import NeonDesigner from '@/components/NeonDesigner';
@@ -27,7 +28,10 @@ const Index = () => {
   const [exceedsLimit, setExceedsLimit] = useState(false);
   const [showContactDialog, setShowContactDialog] = useState(false);
 
-  // Calculate height based on the text, font and width using Canvas API
+  // Referencja do komponentu dla wymuszenia przerenderowania miar
+  const forceUpdateRef = useRef(0);
+
+  // Calculate height based on the text, font and width using SVG/Canvas API
   useEffect(() => {
     try {
       // Check if text contains newline to enable two lines mode
@@ -36,16 +40,61 @@ const Index = () => {
         setEnableTwoLines(true);
       }
       
-      // Use the utility to calculate height based on text measurements
-      const calculatedHeight = calculateHeightForWidth(
+      // Pobierz rzeczywisty bounding box tekstu (najmniejszy prostokąt zawierający tekst)
+      const fontSize = 72; // Duży rozmiar dla dokładnych pomiarów
+      
+      // Użyj ulepszonej funkcji pomiarowej, która zwraca dokładne wymiary
+      const measurements = measureTextInCm(
         text || 'Twój tekst',
         font,
-        width,
-        enableTwoLines || containsNewline
+        fontSize
       );
       
-      // Set a minimum height
-      const newHeight = Math.max(10, calculatedHeight);
+      // Pobierz naturalne proporcje tekstu (stosunek wysokości do szerokości)
+      const naturalWidth = measurements.boundingBox.width;
+      const naturalHeight = measurements.boundingBox.height;
+      
+      // Oblicz współczynnik proporcji (stosunek wysokości do szerokości)
+      const aspectRatio = naturalHeight / naturalWidth;
+      
+      // Oblicz wysokość na podstawie szerokości i współczynnika proporcji
+      // To jest kluczowa zmiana - wysokość jest proporcjonalna do szerokości
+      let calculatedHeight = width * aspectRatio;
+      
+      // Dostosuj współczynnik proporcji dla różnych czcionek
+      const fontFactors = {
+        'Arial': 1.0,
+        'Times New Roman': 0.9,
+        'Courier New': 1.0,
+        'Georgia': 0.95,
+        'Verdana': 1.05,
+        'default': 1.0
+      };
+      
+      const fontFactor = fontFactors[font] || fontFactors['default'];
+      calculatedHeight *= fontFactor;
+      
+      // Uwzględnij specjalne przypadki
+      if (enableTwoLines || containsNewline) {
+        // Dla dwóch linii zwiększ wysokość o 50-100% w zależności od tekstu
+        calculatedHeight *= 1.7;
+      }
+      
+      // Dla krótkich tekstów (1-2 znaki) dodatkowe dostosowanie
+      if (text.length <= 2) {
+        if (/^[Il|1\-]+$/.test(text)) {
+          // Dla wąskich, wysokich znaków
+          calculatedHeight = width * 0.8 * fontFactor;
+        } else if (/^[oO0]+$/.test(text)) {
+          // Dla okrągłych znaków - prawie kwadratowy kształt
+          calculatedHeight = width * 0.9 * fontFactor;
+        }
+      }
+      
+      // Ustaw wysokość bez arbitralnego minimum (minimalna wysokość proporcjonalna do szerokości)
+      const minimumHeight = width * 0.05; // 5% szerokości jako absolutne minimum
+      const newHeight = Math.max(minimumHeight, calculatedHeight);
+      
       setHeight(newHeight);
       
       // Check if exceeds maximum height
@@ -61,6 +110,9 @@ const Index = () => {
         newHeight
       );
       setPathLength(textPathLength);
+      
+      // Wymuszenie przerenderowania linii pomiarowych
+      forceUpdateRef.current += 1;
       
       console.log('Calculated dimensions:', {
         text,
