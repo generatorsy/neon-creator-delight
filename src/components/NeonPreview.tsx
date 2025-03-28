@@ -82,6 +82,10 @@ const NeonPreview = ({
 
   // Calculate the aspect ratio for the preview - making it taller
   const previewHeight = 400; // Fixed larger height
+  
+  // Convert to inches for display
+  const widthInches = (width / 2.54).toFixed(1);
+  const heightInches = (height / 2.54).toFixed(1);
 
   return (
     <div className="w-full space-y-6 animate-fade-in">
@@ -109,16 +113,40 @@ const NeonPreview = ({
             </Button>
             
             <div className="p-6 w-full h-full flex items-center justify-center relative">
-              {/* Width measurement at the top */}
-              <div className="absolute top-2 left-1/2 -translate-x-1/2 flex items-center bg-background/80 px-2 py-0.5 rounded text-xs backdrop-blur-sm">
-                <Ruler className="h-3 w-3 mr-1" />
-                <span>{width} cm</span>
+              {/* Height measurement on the left - styled like the reference image */}
+              <div className="absolute left-8 top-1/2 -translate-y-1/2 flex items-center h-3/4">
+                <div className="flex flex-col items-center">
+                  {/* Vertical line */}
+                  <div className="w-px h-full bg-white/60 relative">
+                    {/* Top cap */}
+                    <div className="absolute -top-2 left-0 w-4 h-px bg-white/60 -translate-x-1/2"></div>
+                    {/* Bottom cap */}
+                    <div className="absolute -bottom-2 left-0 w-4 h-px bg-white/60 -translate-x-1/2"></div>
+                  </div>
+                  {/* Height text */}
+                  <div className="absolute -left-2 top-1/2 -translate-y-1/2 transform -rotate-90 whitespace-nowrap">
+                    <span className="text-xs text-white bg-black/70 px-1 py-0.5 rounded">
+                      {height.toFixed(2)}cm / {heightInches}in
+                    </span>
+                  </div>
+                </div>
               </div>
               
-              {/* Height measurement on the left */}
-              <div className="absolute left-2 top-1/2 -translate-y-1/2 flex flex-col items-center bg-background/80 px-2 py-0.5 rounded text-xs backdrop-blur-sm">
-                <Ruler className="h-3 w-3 mb-1 transform rotate-90" />
-                <span className="transform -rotate-90">{Math.round(height)} cm</span>
+              {/* Width measurement at the bottom - styled like the reference image */}
+              <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center w-3/4">
+                <div className="flex flex-col items-center">
+                  {/* Horizontal line */}
+                  <div className="h-px w-full bg-white/60 relative">
+                    {/* Left cap */}
+                    <div className="absolute top-0 -left-2 h-4 w-px bg-white/60 -translate-y-1/2"></div>
+                    {/* Right cap */}
+                    <div className="absolute top-0 -right-2 h-4 w-px bg-white/60 -translate-y-1/2"></div>
+                  </div>
+                  {/* Width text */}
+                  <span className="text-xs text-white bg-black/70 px-1 py-0.5 rounded mt-1">
+                    {width.toFixed(2)}cm / {widthInches}in
+                  </span>
+                </div>
               </div>
               
               <NeonText 
@@ -128,7 +156,7 @@ const NeonPreview = ({
                 letterColors={letterColors}
                 isGlowing={isGlowing}
                 width={width}
-                maxWidth={100} // Reduced from 120 to make text larger
+                maxWidth={90} // Reduced to make text larger
                 onLetterColorChange={onLetterColorChange}
                 enableTwoLines={enableTwoLines}
               />
@@ -136,8 +164,8 @@ const NeonPreview = ({
           </div>
 
           <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span>Szerokość: {width} cm</span>
-            <span>Wysokość: {Math.round(height)} cm</span>
+            <span>Szerokość: {width.toFixed(2)} cm</span>
+            <span>Wysokość: {height.toFixed(2)} cm</span>
           </div>
 
           <BackgroundSelector

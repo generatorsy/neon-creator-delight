@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
@@ -11,6 +10,24 @@ import { Switch } from '@/components/ui/switch';
 import { Check, LightbulbOff, LightbulbIcon, AlertTriangle, Ruler } from 'lucide-react';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import PathLengthVisualizer from './PathLengthVisualizer';
+import { Textarea } from '@/components/ui/textarea';
+
+// Updated simple fonts that are more likely to work
+const FONTS = ['Arial', 'Georgia', 'Verdana', 'Times New Roman', 'Courier New'];
+
+const COLORS = [
+  { name: 'Biały ciepły', value: '#fff6e0' },
+  { name: 'Biały neutralny', value: '#f5f5f5' },
+  { name: 'Biały zimny', value: '#f0f8ff' },
+  { name: 'Czerwony', value: '#ea384c' },
+  { name: 'Pomarańczowy', value: '#ff7b00' },
+  { name: 'Błękitny', value: '#33c3f0' },
+  { name: 'Granatowy', value: '#0a1172' },
+  { name: 'Zielony', value: '#39d353' },
+  { name: 'Cytrynowy', value: '#dfff4f' },
+  { name: 'Różowy', value: '#ff6ac1' },
+  { name: 'Fioletowy', value: '#8b5cf6' },
+];
 
 type NeonFormProps = {
   text: string;
@@ -32,23 +49,6 @@ type NeonFormProps = {
   pathLength: number;
 };
 
-// Updated simple fonts that are more likely to work
-const FONTS = ['Arial', 'Georgia', 'Verdana', 'Times New Roman', 'Courier New'];
-
-const COLORS = [
-  { name: 'Biały ciepły', value: '#fff6e0' },
-  { name: 'Biały neutralny', value: '#f5f5f5' },
-  { name: 'Biały zimny', value: '#f0f8ff' },
-  { name: 'Czerwony', value: '#ea384c' },
-  { name: 'Pomarańczowy', value: '#ff7b00' },
-  { name: 'Błękitny', value: '#33c3f0' },
-  { name: 'Granatowy', value: '#0a1172' },
-  { name: 'Zielony', value: '#39d353' },
-  { name: 'Cytrynowy', value: '#dfff4f' },
-  { name: 'Różowy', value: '#ff6ac1' },
-  { name: 'Fioletowy', value: '#8b5cf6' },
-];
-
 const NeonForm = ({
   text,
   setText,
@@ -69,9 +69,21 @@ const NeonForm = ({
   pathLength,
 }: NeonFormProps) => {
   
-  const handleTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const maxLength = enableTwoLines ? 40 : 24;
-    const newText = e.target.value.slice(0, maxLength);
+  const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const maxLength = 40; // Same max length regardless of lines
+    let newText = e.target.value.slice(0, maxLength);
+    
+    // If text contains newline, enable two lines
+    if (newText.includes('\n') && !enableTwoLines) {
+      setEnableTwoLines(true);
+    }
+    
+    // Ensure there's only one newline character max
+    const lines = newText.split('\n');
+    if (lines.length > 2) {
+      newText = lines.slice(0, 2).join('\n');
+    }
+    
     setText(newText);
   };
 
@@ -92,31 +104,35 @@ const NeonForm = ({
           
           <TabsContent value="text" className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="neon-text">Twój tekst (maksymalnie {enableTwoLines ? "40" : "24"} znaków)</Label>
-              <Input 
+              <Label htmlFor="neon-text">Twój tekst (maksymalnie 40 znaków)</Label>
+              <Textarea 
                 id="neon-text"
                 value={text} 
                 onChange={handleTextChange} 
                 placeholder="Wpisz swój tekst..."
-                className="bg-secondary/50"
-                maxLength={enableTwoLines ? 40 : 24}
+                className="bg-secondary/50 resize-none"
+                maxLength={40}
+                rows={2}
               />
+              <div className="text-sm text-muted-foreground">
+                Naciśnij Enter, aby podzielić tekst na dwie linie
+              </div>
             </div>
             
             <div className="flex items-center space-x-2 pt-2">
               <Switch 
                 id="two-lines" 
-                checked={enableTwoLines}
-                onCheckedChange={setEnableTwoLines}
+                checked={enableTwoLines || text.includes('\n')}
+                onCheckedChange={(checked) => {
+                  setEnableTwoLines(checked);
+                  // If disabling two lines, remove any newline characters
+                  if (!checked && text.includes('\n')) {
+                    setText(text.replace('\n', ' '));
+                  }
+                }}
               />
               <Label htmlFor="two-lines">Tekst w dwóch liniach</Label>
             </div>
-            
-            {enableTwoLines && (
-              <div className="text-sm text-muted-foreground">
-                Maksymalnie 20 znaków w każdej linii
-              </div>
-            )}
           </TabsContent>
           
           <TabsContent value="font" className="space-y-4">

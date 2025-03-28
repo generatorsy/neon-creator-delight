@@ -54,9 +54,9 @@ const NeonDesigner = ({
   onCustomQuoteRequest,
   pathLength
 }: NeonDesignerProps) => {
-  // Handle letter color change
+  // Handle letter color change - fixed TypeScript error
   const handleLetterColorChange = (index: number, color: string) => {
-    setLetterColors(prev => ({
+    setLetterColors((prev: Record<number, string>) => ({
       ...prev,
       [index]: color
     }));

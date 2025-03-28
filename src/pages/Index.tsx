@@ -7,7 +7,6 @@ import {
 } from '@/utils/textMeasurement';
 import CustomQuoteDialog from '@/components/CustomQuoteDialog';
 import NeonDesigner from '@/components/NeonDesigner';
-import { useToast } from '@/hooks/use-toast';
 
 const Index = () => {
   // State variables
@@ -31,16 +30,22 @@ const Index = () => {
   // Calculate height based on the text, font and width using Canvas API
   useEffect(() => {
     try {
+      // Check if text contains newline to enable two lines mode
+      const containsNewline = text.includes('\n');
+      if (containsNewline && !enableTwoLines) {
+        setEnableTwoLines(true);
+      }
+      
       // Use the utility to calculate height based on text measurements
       const calculatedHeight = calculateHeightForWidth(
         text || 'Twój tekst',
         font,
         width,
-        enableTwoLines
+        enableTwoLines || containsNewline
       );
       
       // Set a minimum height
-      const newHeight = Math.max(10, Math.round(calculatedHeight));
+      const newHeight = Math.max(10, calculatedHeight);
       setHeight(newHeight);
       
       // Check if exceeds maximum height
@@ -51,7 +56,7 @@ const Index = () => {
       const textPathLength = calculatePathLengthForText(
         text || 'Twój tekst',
         font,
-        enableTwoLines,
+        enableTwoLines || containsNewline,
         width,
         newHeight
       );
@@ -61,9 +66,9 @@ const Index = () => {
         text,
         font,
         width: `${width}cm`,
-        height: `${Math.round(calculatedHeight)}cm`,
+        height: `${newHeight.toFixed(2)}cm`,
         pathLength: `${textPathLength.toFixed(1)}cm`,
-        twoLines: enableTwoLines,
+        twoLines: enableTwoLines || containsNewline,
         exceedsLimit: isExceeding
       });
     } catch (error) {
@@ -71,8 +76,8 @@ const Index = () => {
       // Fallback to simple calculation if canvas measurement fails
       const ratio = 0.5;
       const baseHeight = width * ratio;
-      const calculatedHeight = enableTwoLines ? baseHeight * 1.5 : baseHeight;
-      setHeight(Math.max(10, Math.round(calculatedHeight)));
+      const calculatedHeight = enableTwoLines || text.includes('\n') ? baseHeight * 1.5 : baseHeight;
+      setHeight(Math.max(10, calculatedHeight));
       // Estimate path length as 1.5x the width (rough approximation)
       setPathLength(width * 1.5);
     }
@@ -83,11 +88,6 @@ const Index = () => {
     const pricePerCm = 20; // 20zł per cm
     setPrice(width * pricePerCm);
   }, [width]);
-
-  // Debug font changes
-  useEffect(() => {
-    console.log('Font changed to:', font);
-  }, [font]);
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
