@@ -1,5 +1,6 @@
 
 import React, { useEffect, useRef, useMemo } from 'react';
+
 import { getTextCenterlinePoints, splitTextIntoLines } from '@/utils/textMeasurement';
 
 type PathLengthVisualizerProps = {
