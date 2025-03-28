@@ -49,7 +49,7 @@ const NeonText = ({
   
   // Bezpieczny tekst - obsługa null, undefined, i ograniczenie długości
   const safeText = useMemo(() => {
-    if (!text) return 'Twój tekst';
+    if (!text) return 'Twój neon';
     return text.substring(0, 40); // Zapewnienie maksymalnej długości
   }, [text]);
   

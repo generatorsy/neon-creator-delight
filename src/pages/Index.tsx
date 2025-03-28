@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   calculateHeightForWidth, 
@@ -10,8 +9,8 @@ import CustomQuoteDialog from '@/components/CustomQuoteDialog';
 import NeonDesigner from '@/components/NeonDesigner';
 
 const Index = () => {
-  // State variables
-  const [text, setText] = useState('Twój tekst');
+  // Change default text to "Twój neon"
+  const [text, setText] = useState('Twój neon');
   const [font, setFont] = useState('Arial');
   const [neonColor, setNeonColor] = useState('#fff6e0'); // Warm white by default
   const [letterColors, setLetterColors] = useState<Record<number, string>>({}); // State for letter colors
