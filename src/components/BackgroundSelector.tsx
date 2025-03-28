@@ -9,8 +9,9 @@ const backgrounds = [
   { id: 'bedroom', label: 'Sypialnia', color: 'bg-[#e0e0e0]' },
   { id: 'office', label: 'Biuro', color: 'bg-[#d0d0d0]' },
   { id: 'brick', label: 'Cegła', color: 'bg-[#2c1e1e]' },
-  { id: 'dark', label: 'Ciemna Ściana', color: 'bg-black' },
+  { id: 'dark', label: 'Ciemna Ścianaa', color: 'bg-black' },
 ];
+
 
 
 type BackgroundSelectorProps = {
