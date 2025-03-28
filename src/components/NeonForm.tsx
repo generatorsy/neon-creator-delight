@@ -10,6 +10,7 @@ import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { Check, LightbulbOff, LightbulbIcon, AlertTriangle, Ruler } from 'lucide-react';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import PathLengthVisualizer from './PathLengthVisualizer';
 
 type NeonFormProps = {
   text: string;
@@ -233,7 +234,7 @@ const NeonForm = ({
               )}
             </div>
             
-            {/* Add path length information below price */}
+            {/* Path length information */}
             <div className="flex items-center mt-2 pt-2 border-t border-border/30">
               <Ruler className="h-4 w-4 mr-2 text-muted-foreground" />
               <span className="text-sm">
@@ -241,6 +242,14 @@ const NeonForm = ({
               </span>
             </div>
           </div>
+          
+          <PathLengthVisualizer 
+            text={text || "Twój tekst"}
+            font={font}
+            width={width}
+            height={height}
+            enableTwoLines={enableTwoLines}
+          />
           
           <Button 
             className="w-full" 

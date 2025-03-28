@@ -1,4 +1,3 @@
-
 /**
  * Utility for measuring text dimensions with Canvas API
  */
@@ -141,8 +140,8 @@ export const exceedsMaxHeight = (height: number, maxHeight: number = 60): boolea
 };
 
 /**
- * Calculates approximate path length of text in centimeters
- * This estimates the centerline length of each glyph
+ * Calculates approximate path length of text in centimeters based on centerline approach
+ * This estimates the length of the middle line that would be used for neon tube bending
  */
 export const calculateTextPathLength = (
   text: string,
@@ -162,26 +161,143 @@ export const calculateTextPathLength = (
   
   let totalPathLength = 0;
   
-  // For each character, measure its width and add to total
-  // This is an approximation as we can't directly measure the exact centerline path
+  // Character complexity factors - how much extra path length each character requires
+  const complexityFactors: Record<string, number> = {
+    // Straight characters
+    'I': 1.0, 'i': 1.0, 'l': 1.0, '|': 1.0, '1': 1.0, 'T': 1.2, 'L': 1.2, 'H': 1.3, 'E': 1.4, 'F': 1.3,
+    // Slightly curved
+    'J': 1.3, '7': 1.2, 'Y': 1.3, 'V': 1.3, 'A': 1.4, 'K': 1.4, 'X': 1.6, 'Z': 1.5, 'N': 1.5, 'M': 1.8,
+    // Medium complexity curves
+    'U': 1.5, 'C': 1.7, 'D': 1.6, 'P': 1.6, 'R': 1.7, 'B': 1.8, '2': 1.7, '3': 1.8, '5': 1.8,
+    // Very curved characters
+    'O': 2.0, 'Q': 2.1, 'G': 2.0, '0': 2.0, '6': 2.0, '8': 2.1, '9': 2.0, 'S': 2.3,
+    // Default for other characters
+    'default': 1.5
+  };
+  
+  // For each character, measure its width and apply complexity factor
   for (let i = 0; i < text.length; i++) {
     const char = text[i];
     const charWidth = context.measureText(char).width;
     
-    // Add character width to total path length
-    totalPathLength += charWidth;
+    // Get complexity factor for this character or use default
+    const factor = complexityFactors[char] || complexityFactors['default'];
     
-    // For complex characters (like m, w, etc.), add a small correction factor
-    // based on the character complexity
-    if (/[mwMW]/.test(char)) {
-      totalPathLength += charWidth * 0.3; // 30% extra for complex characters
-    } else if (/[BDOPQRSbdopqrs]/.test(char)) {
-      totalPathLength += charWidth * 0.2; // 20% extra for curved characters
-    }
+    // Apply complexity factor to account for the centerline path length
+    totalPathLength += charWidth * factor;
   }
   
   // Convert to centimeters
   return pxToCm(totalPathLength);
+};
+
+/**
+ * Get path points to visualize the centerline path
+ * Returns points that can be used to draw the path
+ */
+export const getTextCenterlinePoints = (
+  text: string,
+  font: string,
+  width: number,
+  height: number,
+  fontSize: number = 72,
+  enableTwoLines: boolean = false
+): { points: {x: number, y: number}[]; length: number } => {
+  const canvas = document.createElement('canvas');
+  const context = canvas.getContext('2d');
+  
+  if (!context) {
+    console.error('Canvas context not available');
+    return { points: [], length: 0 };
+  }
+  
+  // Set canvas size
+  canvas.width = 1000;
+  canvas.height = 300;
+  
+  // Get lines of text
+  const lines = enableTwoLines && text.length > 20 ? splitTextIntoLines(text) : [text];
+  
+  // Measure natural dimensions
+  const { width: naturalWidth } = measureTextInCm(text, font, fontSize);
+  
+  // Calculate scale factor
+  const scaleFactor = width / naturalWidth;
+  
+  let points: {x: number, y: number}[] = [];
+  let totalLength = 0;
+  
+  // Process each line
+  let lineY = 0;
+  const lineHeight = height / lines.length;
+  
+  lines.forEach((line, lineIndex) => {
+    const lineCenterY = lineHeight * (lineIndex + 0.5);
+    let xPos = 0;
+    
+    // For each character, generate points for visualization
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+      const charMetrics = context.measureText(char);
+      const charWidth = charMetrics.width;
+      
+      // Complexity factor determines how many points to generate
+      const complexityKey = char.toUpperCase() in {S:1, O:1, G:1, C:1, Q:1, '8':1, '6':1, '9':1, '0':1} 
+        ? char.toUpperCase() : 'default';
+      const complexity = complexityKey === 'S' ? 2.3 : (complexityKey === 'default' ? 1.5 : 2.0);
+      
+      // For straight characters, just generate start and end points
+      if (/[Il|1]/.test(char)) {
+        points.push({ x: xPos, y: lineCenterY - lineHeight/3 });
+        points.push({ x: xPos, y: lineCenterY + lineHeight/3 });
+        totalLength += lineHeight * 2/3;
+      } 
+      // For curved characters like S, O, etc. generate curve points
+      else if (/[SOCGQocsq80693]/.test(char)) {
+        // Generate curve points
+        const steps = 8;
+        const radius = charWidth / 2;
+        
+        for (let j = 0; j <= steps; j++) {
+          const angle = complexity === 2.3 
+            ? (j / steps) * Math.PI * 2 - Math.PI/2 // S-like curve
+            : (j / steps) * Math.PI * 2; // O-like curve
+          
+          const xOffset = complexity === 2.3 
+            ? Math.sin(angle) * radius * (j < steps/2 ? 1 : -1) // S-curve
+            : Math.cos(angle) * radius; // O-curve
+          
+          const yOffset = Math.sin(angle) * radius/2;
+          
+          points.push({ 
+            x: xPos + radius + xOffset, 
+            y: lineCenterY + yOffset 
+          });
+        }
+        
+        totalLength += charWidth * complexity;
+      } 
+      // For other characters, approximate with simple lines
+      else {
+        points.push({ x: xPos, y: lineCenterY });
+        points.push({ x: xPos + charWidth, y: lineCenterY });
+        totalLength += charWidth * (complexity || 1.5);
+      }
+      
+      xPos += charWidth;
+    }
+  });
+  
+  // Apply scale factor to points
+  points = points.map(point => ({
+    x: point.x * scaleFactor,
+    y: point.y * (height / (fontSize * 0.7)) // Scale height proportionally
+  }));
+  
+  return { 
+    points, 
+    length: pxToCm(totalLength) * scaleFactor 
+  };
 };
 
 /**
@@ -200,28 +316,19 @@ export const calculatePathLengthForText = (
   }
   
   // Handle special case for very simple characters like "I"
-  // where we need direct correlation between character count and path length
-  const simpleCharRegex = /^[Ii\|]+$/;
+  const simpleCharRegex = /^[Ii\|1]+$/;
   if (simpleCharRegex.test(text)) {
     // For simple vertical characters, path length is directly proportional to character count and height
-    return text.length * height;
+    return text.length * height * 0.8; // 80% of height is the typical visible height
   }
   
-  let textToMeasure = text;
-  let lines = [textToMeasure];
-  
-  if (enableTwoLines && text.length > 20) {
-    lines = splitTextIntoLines(text);
-  }
+  let lines = enableTwoLines && text.length > 20 ? splitTextIntoLines(text) : [text];
   
   // Get the natural dimensions of the text
   let totalNaturalWidth = 0;
-  let maxNaturalHeight = 0;
-  
   lines.forEach(line => {
-    const { width: lineWidth, height: lineHeight } = measureTextInCm(line, font);
+    const { width: lineWidth } = measureTextInCm(line, font);
     totalNaturalWidth = Math.max(totalNaturalWidth, lineWidth);
-    maxNaturalHeight += lineHeight;
   });
   
   // Calculate the scale factor based on user-specified width
@@ -231,18 +338,38 @@ export const calculatePathLengthForText = (
   let totalPathLength = 0;
   
   lines.forEach(line => {
-    // Calculate the basic path length for this line
-    const basePath = calculateTextPathLength(line, font);
-    // Apply the scale factor to get the actual path length
-    totalPathLength += basePath * scaleFactor;
+    // Characters with complex shapes need more calculation
+    let lineLength = 0;
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+      const { width: charWidth } = measureTextInCm(char, font);
+      
+      // Apply character-specific complexity factors
+      let complexityFactor = 1.5; // Default factor
+      
+      if (/[Il|1]/.test(char)) {
+        // Straight lines are proportional to height
+        lineLength += height * 0.8;
+        continue;
+      } else if (/[SOCGQ80]/.test(char)) {
+        // Highly curved characters (like S, O, etc.)
+        complexityFactor = 2.2;
+      } else if (/[BDPR36]/.test(char)) {
+        // Moderately curved characters
+        complexityFactor = 1.8;
+      } else if (/[AEFHJKLMNTVXYZ2457]/.test(char)) {
+        // Angular or slightly curved characters
+        complexityFactor = 1.4;
+      }
+      
+      lineLength += charWidth * complexityFactor;
+    }
+    
+    totalPathLength += lineLength;
   });
   
-  // For curved letters, the path length is typically longer than the straight-line width
-  // Apply a correction factor based on character complexity
-  const containsComplexChars = /[OoCcGgSsQqDdBbPpRrUuJj]/i.test(text);
-  if (containsComplexChars) {
-    totalPathLength *= 1.2; // 20% increase for curved characters
-  }
+  // Apply scale factor
+  totalPathLength *= scaleFactor;
   
   // Round to one decimal place for better readability
   return Math.round(totalPathLength * 10) / 10;
