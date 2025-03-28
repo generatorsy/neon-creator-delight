@@ -4,11 +4,14 @@ import { cn } from '@/lib/utils';
 import NeonText from './NeonText';
 import BackgroundSelector from './BackgroundSelector';
 import { Card } from '@/components/ui/card';
+import { Ruler, LightbulbOff, Lightbulb } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 type NeonPreviewProps = {
   text: string;
   font: string;
   color: string;
+  letterColors: Record<number, string>;
   isGlowing: boolean;
   width: number;
   height: number;
@@ -16,6 +19,8 @@ type NeonPreviewProps = {
   customBackgroundUrl: string | null;
   onSelectBackground: (bgId: string) => void;
   onCustomBackgroundChange: (url: string | null) => void;
+  onToggleGlow: () => void;
+  onLetterColorChange?: (index: number, color: string) => void;
   enableTwoLines: boolean;
 };
 
@@ -23,6 +28,7 @@ const NeonPreview = ({
   text,
   font,
   color,
+  letterColors,
   isGlowing,
   width,
   height,
@@ -30,6 +36,8 @@ const NeonPreview = ({
   customBackgroundUrl,
   onSelectBackground,
   onCustomBackgroundChange,
+  onToggleGlow,
+  onLetterColorChange,
   enableTwoLines
 }: NeonPreviewProps) => {
   const getBackgroundStyle = () => {
@@ -81,7 +89,7 @@ const NeonPreview = ({
         <div className="flex flex-col space-y-4">
           <div 
             className={cn(
-              "w-full rounded-lg overflow-hidden transition-all duration-300 flex items-center justify-center", 
+              "w-full rounded-lg overflow-hidden transition-all duration-300 flex items-center justify-center relative", 
               getBackgroundClass()
             )}
             style={{
@@ -89,14 +97,39 @@ const NeonPreview = ({
               height: `${previewHeight}px`,
             }}
           >
-            <div className="p-6 w-full h-full flex items-center justify-center">
+            {/* Toggle Glow Button in the top right corner */}
+            <Button 
+              variant="outline" 
+              size="icon" 
+              className="absolute top-2 right-2 z-10 bg-background/80 backdrop-blur-sm" 
+              onClick={onToggleGlow}
+              title={isGlowing ? "Wyłącz świecenie" : "Włącz świecenie"}
+            >
+              {isGlowing ? <Lightbulb className="h-4 w-4" /> : <LightbulbOff className="h-4 w-4" />}
+            </Button>
+            
+            <div className="p-6 w-full h-full flex items-center justify-center relative">
+              {/* Width measurement at the top */}
+              <div className="absolute top-2 left-1/2 -translate-x-1/2 flex items-center bg-background/80 px-2 py-0.5 rounded text-xs backdrop-blur-sm">
+                <Ruler className="h-3 w-3 mr-1" />
+                <span>{width} cm</span>
+              </div>
+              
+              {/* Height measurement on the left */}
+              <div className="absolute left-2 top-1/2 -translate-y-1/2 flex flex-col items-center bg-background/80 px-2 py-0.5 rounded text-xs backdrop-blur-sm">
+                <Ruler className="h-3 w-3 mb-1 transform rotate-90" />
+                <span className="transform -rotate-90">{Math.round(height)} cm</span>
+              </div>
+              
               <NeonText 
                 text={text || 'Twój tekst'}
                 font={font}
                 color={color}
+                letterColors={letterColors}
                 isGlowing={isGlowing}
                 width={width}
-                maxWidth={120}
+                maxWidth={100} // Reduced from 120 to make text larger
+                onLetterColorChange={onLetterColorChange}
                 enableTwoLines={enableTwoLines}
               />
             </div>

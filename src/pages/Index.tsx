@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import NeonForm from '@/components/NeonForm';
 import NeonPreview from '@/components/NeonPreview';
@@ -16,6 +17,7 @@ const Index = () => {
   const [text, setText] = useState('Twój tekst');
   const [font, setFont] = useState('Arial');
   const [neonColor, setNeonColor] = useState('#fff6e0'); // Warm white by default
+  const [letterColors, setLetterColors] = useState<Record<number, string>>({}); // New state for letter colors
   const [width, setWidth] = useState(60); // Default width in cm
   const [height, setHeight] = useState(20); // Will be calculated based on font and text
   const [isGlowing, setIsGlowing] = useState(true);
@@ -95,6 +97,20 @@ const Index = () => {
     console.log('Font changed to:', font);
   }, [font]);
   
+  // Handle letter color change
+  const handleLetterColorChange = (index: number, color: string) => {
+    setLetterColors(prev => ({
+      ...prev,
+      [index]: color
+    }));
+    
+    // Show success message
+    toast({
+      title: "Kolor zmieniony",
+      description: "Kolor litery został zmieniony.",
+    });
+  };
+  
   const handleCustomQuoteSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -116,6 +132,7 @@ const Index = () => {
         text,
         font,
         color: neonColor,
+        letterColors,
         width,
         height,
         enableTwoLines
@@ -145,6 +162,7 @@ const Index = () => {
               text={text}
               font={font}
               color={neonColor}
+              letterColors={letterColors}
               isGlowing={isGlowing}
               width={width}
               height={height}
@@ -152,6 +170,8 @@ const Index = () => {
               customBackgroundUrl={customBackgroundUrl}
               onSelectBackground={setBackground}
               onCustomBackgroundChange={setCustomBackgroundUrl}
+              onToggleGlow={() => setIsGlowing(!isGlowing)}
+              onLetterColorChange={handleLetterColorChange}
               enableTwoLines={enableTwoLines}
             />
           </div>

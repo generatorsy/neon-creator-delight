@@ -31,8 +31,8 @@ const PathLengthVisualizer = ({
     
     // Set canvas dimensions with higher DPI for retina displays
     const devicePixelRatio = window.devicePixelRatio || 1;
-    const canvasWidth = 400;
-    const canvasHeight = 200;
+    const canvasWidth = 500; // Increased from 400 for better visibility
+    const canvasHeight = 250; // Increased from 200 for better visibility
     
     canvas.width = canvasWidth * devicePixelRatio;
     canvas.height = canvasHeight * devicePixelRatio;
@@ -55,32 +55,32 @@ const PathLengthVisualizer = ({
     const pathWidth = maxX - minX;
     const pathHeight = maxY - minY;
     
-    const scaleX = (canvasWidth - 40) / pathWidth;
-    const scaleY = (canvasHeight - 40) / pathHeight;
+    const scaleX = (canvasWidth - 60) / pathWidth; // Increased padding
+    const scaleY = (canvasHeight - 60) / pathHeight; // Increased padding
     const scale = Math.min(scaleX, scaleY);
     
     const offsetX = (canvasWidth - pathWidth * scale) / 2;
     const offsetY = (canvasHeight - pathHeight * scale) / 2;
     
-    // Draw text outline
+    // Draw text outline with better visibility
     context.save();
     context.translate(offsetX, offsetY);
     context.scale(scale, scale);
     context.translate(-minX, -minY);
     
     context.font = `72px ${font}`;
-    context.fillStyle = 'rgba(0, 0, 255, 0.1)';
+    context.fillStyle = 'rgba(0, 0, 255, 0.15)';
     context.fillText(text, 0, 72);
     
-    context.strokeStyle = 'blue';
+    context.strokeStyle = '#4a80fc';
     context.lineWidth = 1 / scale;
     context.strokeText(text, 0, 72);
     
     // Draw centerline path
     context.beginPath();
     context.strokeStyle = '#4CAF50';
-    context.lineWidth = 2 / scale;
-    context.setLineDash([5 / scale, 3 / scale]);
+    context.lineWidth = 3 / scale; // Thicker line
+    context.setLineDash([6 / scale, 3 / scale]);
     
     for (let i = 0; i < points.length; i++) {
       const { x, y } = points[i];
@@ -92,22 +92,33 @@ const PathLengthVisualizer = ({
     }
     
     context.stroke();
+    
+    // Draw dots at each point
+    context.fillStyle = '#4CAF50';
+    context.setLineDash([]);
+    for (let i = 0; i < points.length; i += Math.max(1, Math.floor(points.length / 20))) {
+      const { x, y } = points[i];
+      context.beginPath();
+      context.arc(x, y, 2 / scale, 0, Math.PI * 2);
+      context.fill();
+    }
+    
     context.restore();
     
     // Add text explanation
     context.fillStyle = '#333';
-    context.font = '12px Arial';
-    context.fillText(`Długość ścieżki (zielona linia): ${length.toFixed(1)} cm`, 10, canvasHeight - 10);
+    context.font = '14px Arial'; // Larger font
+    context.fillText(`Długość ścieżki (zielona linia): ${length.toFixed(1)} cm`, 10, canvasHeight - 15);
     
   }, [text, font, width, height, enableTwoLines]);
   
   return (
-    <div className="mt-4 flex flex-col items-center">
-      <h3 className="text-sm font-medium mb-2">Wizualizacja ścieżki neonu</h3>
-      <div className="border border-border rounded-md p-2 bg-background/50">
-        <canvas ref={canvasRef} className="w-full max-w-[400px]" />
+    <div className="mt-6 flex flex-col items-center border border-border rounded-lg p-4 bg-background/50">
+      <h3 className="text-base font-medium mb-3">Wizualizacja ścieżki neonu</h3>
+      <div className="border border-border rounded-md p-3 bg-background/60 shadow-sm">
+        <canvas ref={canvasRef} className="w-full max-w-[500px]" />
       </div>
-      <p className="text-xs text-muted-foreground mt-2">
+      <p className="text-sm text-muted-foreground mt-3">
         Zielona przerywana linia pokazuje przybliżoną ścieżkę środkową neonowej rurki
       </p>
     </div>
