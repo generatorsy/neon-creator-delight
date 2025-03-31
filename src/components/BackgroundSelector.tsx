@@ -4,15 +4,34 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Image, Upload } from 'lucide-react';
 
+// Updated backgrounds with URLs instead of colors
 const backgrounds = [
-  { id: 'living', label: 'Salon', color: 'bg-[#f5f5f5]' },
-  { id: 'bedroom', label: 'Sypialnia', color: 'bg-[#e0e0e0]' },
-  { id: 'office', label: 'Biuro', color: 'bg-[#d0d0d0]' },
-  { id: 'brick', label: 'Cegła', color: 'bg-[#2c1e1e]' },
-  { id: 'dark', label: 'Ciemna Ścianaa', color: 'bg-black' },
+  { 
+    id: 'living', 
+    label: 'Salon', 
+    imageUrl: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?q=80&w=2070&auto=format&fit=crop' 
+  },
+  { 
+    id: 'bedroom', 
+    label: 'Sypialnia', 
+    imageUrl: 'https://images.unsplash.com/photo-1560448205-4d9b3e6bb6db?q=80&w=2070&auto=format&fit=crop' 
+  },
+  { 
+    id: 'office', 
+    label: 'Biuro', 
+    imageUrl: 'https://images.unsplash.com/photo-1498409785966-ab341407de6e?q=80&w=2069&auto=format&fit=crop' 
+  },
+  { 
+    id: 'brick', 
+    label: 'Cegła', 
+    imageUrl: 'https://images.unsplash.com/photo-1595514535215-9a5e0e8e04be?q=80&w=1974&auto=format&fit=crop' 
+  },
+  { 
+    id: 'dark', 
+    label: 'Ciemna Ściana', 
+    imageUrl: 'https://images.unsplash.com/photo-1622547748225-3fc4abd2cca0?q=80&w=1932&auto=format&fit=crop' 
+  },
 ];
-
-
 
 type BackgroundSelectorProps = {
   selectedBackground: string;
@@ -56,15 +75,20 @@ const BackgroundSelector = ({
             key={bg.id}
             onClick={() => onSelectBackground(bg.id)}
             className={cn(
-              'w-10 h-10 rounded-md transition-all duration-200 hover:scale-105',
-              bg.color,
+              'w-10 h-10 rounded-md transition-all duration-200 hover:scale-105 overflow-hidden',
               selectedBackground === bg.id ? 'ring-2 ring-white' : 'ring-1 ring-white/20'
             )}
             aria-label={bg.label}
             title={bg.label}
+            style={{
+              backgroundImage: `url(${bg.imageUrl})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center'
+            }}
           />
         ))}
         
+        {/* Custom background button */}
         <button
           onClick={handleUploadClick}
           className={cn(
@@ -74,8 +98,17 @@ const BackgroundSelector = ({
           )}
           aria-label="Własne tło"
           title="Własne tło"
+          style={
+            selectedBackground === 'custom' && customBackgroundUrl
+              ? {
+                  backgroundImage: `url(${customBackgroundUrl})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                }
+              : {}
+          }
         >
-          <Upload size={16} />
+          {!(selectedBackground === 'custom' && customBackgroundUrl) && <Upload size={16} />}
         </button>
       </div>
       

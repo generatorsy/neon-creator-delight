@@ -1,3 +1,4 @@
+
 import React, { useMemo, useRef, useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import NeonText from './NeonText';
@@ -6,6 +7,15 @@ import InfoPopup from './InfoPopup';
 import { Card } from '@/components/ui/card';
 import { Ruler, LightbulbOff, Lightbulb } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+
+// Define background image URLs in a central place to ensure consistency
+export const backgroundImages: Record<string, string> = {
+  living: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?q=80&w=2070&auto=format&fit=crop',
+  bedroom: 'https://images.unsplash.com/photo-1560448205-4d9b3e6bb6db?q=80&w=2070&auto=format&fit=crop',
+  office: 'https://images.unsplash.com/photo-1498409785966-ab341407de6e?q=80&w=2069&auto=format&fit=crop',
+  brick: 'https://images.unsplash.com/photo-1595514535215-9a5e0e8e04be?q=80&w=1974&auto=format&fit=crop',
+  dark: 'https://images.unsplash.com/photo-1622547748225-3fc4abd2cca0?q=80&w=1932&auto=format&fit=crop',
+};
 
 type NeonPreviewProps = {
   text: string;
@@ -67,15 +77,6 @@ const NeonPreview = ({
       };
     }
     
-    // Default background images showing rooms with empty walls
-    const backgroundImages: Record<string, string> = {
-      living: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?q=80&w=2070&auto=format&fit=crop',
-      bedroom: 'https://images.unsplash.com/photo-1560448205-4d9b3e6bb6db?q=80&w=2070&auto=format&fit=crop',
-      office: 'https://images.unsplash.com/photo-1498409785966-ab341407de6e?q=80&w=2069&auto=format&fit=crop',
-      brick: 'https://images.unsplash.com/photo-1595514535215-9a5e0e8e04be?q=80&w=1974&auto=format&fit=crop',
-      dark: 'https://images.unsplash.com/photo-1622547748225-3fc4abd2cca0?q=80&w=1932&auto=format&fit=crop',
-    };
-    
     if (backgroundImages[background]) {
       return {
         backgroundImage: `url(${backgroundImages[background]})`,
@@ -88,10 +89,9 @@ const NeonPreview = ({
   };
 
   const getBackgroundClass = () => {
-    if (background === 'custom' || ['living', 'bedroom', 'office', 'brick'].includes(background)) return '';
+    if (background === 'custom' || Object.keys(backgroundImages).includes(background)) return '';
     
     const backgroundMap: Record<string, string> = {
-      dark: 'bg-black',
       blue: 'bg-[#121826]',
     };
     
