@@ -1,7 +1,8 @@
-import React, { useMemo, useRef } from 'react';
+import React, { useMemo, useRef, useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import NeonText from './NeonText';
 import BackgroundSelector from './BackgroundSelector';
+import InfoPopup from './InfoPopup';
 import { Card } from '@/components/ui/card';
 import { Ruler, LightbulbOff, Lightbulb } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -39,6 +40,22 @@ const NeonPreview = ({
   onLetterColorChange,
   enableTwoLines
 }: NeonPreviewProps) => {
+  // Stan do kontroli, czy popup został już pokazany
+  const [showedPopup, setShowedPopup] = useState<boolean>(false);
+  
+  // Sprawdź z localStorage, czy popup został już kiedyś pokazany
+  useEffect(() => {
+    const popupShown = localStorage.getItem('neonLetterColorPopupShown');
+    if (popupShown) {
+      setShowedPopup(true);
+    } else {
+      // Jeśli pokazujemy popup po raz pierwszy, zapisz to w localStorage
+      setTimeout(() => {
+        localStorage.setItem('neonLetterColorPopupShown', 'true');
+      }, 7000); // Zapisz po czasie dłuższym niż czas wyświetlania popupu
+    }
+  }, []);
+  
   // Referencja do tekstu do debugowania
   const textRef = useRef<HTMLDivElement>(null);
   const getBackgroundStyle = () => {
@@ -148,6 +165,9 @@ const NeonPreview = ({
               height: `${previewHeight}px`,
             }}
           >
+            {/* InfoPopup - pokazujemy tylko jeśli użytkownik jeszcze go nie widział */}
+            {!showedPopup && <InfoPopup />}
+            
             {/* Przycisk Toggle Glow przesunięty do głównego kontenera poniżej */}
             
             <div className="relative w-full h-full flex flex-col items-center justify-center">
