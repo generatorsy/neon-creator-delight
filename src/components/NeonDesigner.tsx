@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef } from 'react';
 import NeonForm from '@/components/NeonForm';
 import NeonPreview from '@/components/NeonPreview';
@@ -61,6 +60,27 @@ const NeonDesigner = ({
   useEffect(() => {
     updateCounter.current += 1;
   }, [width, height, text, font]);
+  
+  // Reset letter colors when global color changes
+  useEffect(() => {
+    setLetterColors({});
+  }, [neonColor, setLetterColors]);
+  
+  // When text changes, ensure that if any letters are added or deleted,
+  // they use the global color by removing their specific colors
+  useEffect(() => {
+    setLetterColors(prevColors => {
+      const newColors: Record<number, string> = {};
+      // Only keep colors for indices that still exist in the text
+      Object.keys(prevColors).forEach(indexStr => {
+        const index = parseInt(indexStr);
+        if (index < text.length) {
+          newColors[index] = prevColors[index];
+        }
+      });
+      return newColors;
+    });
+  }, [text, setLetterColors]);
   
   // Handle letter color change - fixed TypeScript error
   const handleLetterColorChange = (index: number, color: string) => {
